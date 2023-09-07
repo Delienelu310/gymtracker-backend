@@ -30,8 +30,9 @@ public class AppUser {
     //for making identifiers
     private int trainingsCount = 0;
 
-    //relations with other entities
+    private boolean published;
 
+    //relations with other entities
     @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Exercise> createdExercises = new ArrayList<>();
@@ -131,5 +132,13 @@ public class AppUser {
 
     public void setAppUserDetails(AppUserDetails appUserDetails) {
         this.appUserDetails = appUserDetails;
+    }
+
+    public boolean isPublished() {
+        return published;
+    }
+
+    public void setPublished(boolean published) {
+        this.published = published;
     }
 }
