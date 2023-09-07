@@ -17,12 +17,12 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class CustomExceptionHandler extends ResponseEntityExceptionHandler{
     
 
-    // @ExceptionHandler(Exception.class)
-    // public final ResponseEntity<ErrorDetails> handleUnpredictedExceptions(Exception ex, WebRequest request){
-    //     ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+    @ExceptionHandler(Exception.class)
+    public final ResponseEntity<ErrorDetails> handleUnpredictedExceptions(Exception ex, WebRequest request){
+        ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
     
-    //     return new ResponseEntity<ErrorDetails>(errorDetails, null, HttpStatus.INTERNAL_SERVER_ERROR);
-    // }
+        return new ResponseEntity<ErrorDetails>(errorDetails, null, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
     @ExceptionHandler({UserNotFoundException.class, ExerciseNotFoundException.class, FunctionNotFoundException.class, TrainingNotFoundException.class })
     public final ResponseEntity<ErrorDetails> handleUserNotFoundException(Exception ex, WebRequest request){

@@ -24,10 +24,6 @@ public class AppUserDetails {
     @Size(min = 3, max = 50)
     private String email;
 
-    @NotNull
-    @Size(min = 5, max = 50)
-    private String password;
-
     @Min(0)
     @Max(100)
     private int age;
@@ -41,11 +37,10 @@ public class AppUserDetails {
     private int weight;
 
     //for registration
-    public AppUserDetails(String username, String fullname, String email, String password) {
+    public AppUserDetails(String username, String fullname, String email) {
         this.username = username;
         this.fullname = fullname;
         this.email = email;
-        this.password = password;
     }
 
     //for settings 
@@ -54,7 +49,6 @@ public class AppUserDetails {
         this.username = username;
         this.fullname = fullname;
         this.email = email;
-        this.password = password;
         this.age = age;
         this.height = height;
         this.weight = weight;
@@ -88,14 +82,6 @@ public class AppUserDetails {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public int getAge() {

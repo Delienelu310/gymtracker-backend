@@ -5,6 +5,10 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,6 +27,7 @@ import com.portfolio.gymtracker.exercise.ExerciseResource;
 import com.portfolio.gymtracker.function.Function;
 import com.portfolio.gymtracker.function.FunctionJpaRepository;
 import com.portfolio.gymtracker.function.FunctionResource;
+import com.portfolio.gymtracker.security.SecurityResource;
 
 import jakarta.validation.Valid;
 
@@ -38,36 +43,56 @@ public class UserResource {
 
     public UserResource(UserJpaRepository userJpaRepository,
         ExerciseJpaRepository exerciseJpaRepository,
-        FunctionJpaRepository functionJpaRepository   ,
-        NormalMapper normalMapper 
+        FunctionJpaRepository functionJpaRepository,
+        NormalMapper normalMapper
     ){
         this.userJpaRepository = userJpaRepository;
         this.exerciseJpaRepository = exerciseJpaRepository;
         this.functionJpaRepository = functionJpaRepository;
         this.normalMapper = normalMapper;
     }
+
+    private boolean isAdmin(Authentication authentication){
+        return authentication.getAuthorities().stream().anyMatch(
+            auth ->  auth.getAuthority().equals("ROLE_ADMIN")
+        );
+    }
     
 
     @GetMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
     public MappingJacksonValue getAppUsersList(){
         //depending on users privacy settings we may or may not show them
+        
         return normalMapper.mapUserList(userJpaRepository.findAll()); 
     }
 
     @GetMapping("/users/{user_id}")
-    public MappingJacksonValue getAppUser(@PathVariable("user_id") int userId){
-        //depending on request author and user privacy settings we may or may not show this:
+    public MappingJacksonValue getAppUser(Authentication authentication, @PathVariable("user_id") int userId){
 
+        //check whether user exists
         Optional<AppUser> user = userJpaRepository.findById(userId);
         if(user.isEmpty()) throw new UserNotFoundException("There`s no user with id " + userId);
 
+        //security
+        if( ! authentication.getName().equals( user.get().getAppUserDetails().getUsername()))
+            if( !isAdmin(authentication))
+                throw new RuntimeException("You cannot access this page");
+
+
+        //if valid, then return user details
         return normalMapper.mapUserDetailed(user.get());
     }
 
     @GetMapping("/users/username/{username}")
-    public MappingJacksonValue getAppUserByUsername(@PathVariable("user_id") String username){
+    public MappingJacksonValue getAppUserByUsername(Authentication authentication, @PathVariable("user_id") String username){
         Optional<AppUser> user = userJpaRepository.findByUsername(username);
         if(user.isEmpty()) throw new UserNotFoundException("There`s no user with username " + username);
+
+        //security
+        if( ! authentication.getName().equals( user.get().getAppUserDetails().getUsername()))
+            if( !isAdmin(authentication))
+                throw new RuntimeException("You cannot access this page");
 
         return normalMapper.mapUserDetailed(user.get());
     }
@@ -95,10 +120,8 @@ public class UserResource {
     public void deleteAppUser(@PathVariable("user_id") int userId){
         //of course there must be security and validation
         Optional<AppUser> user = userJpaRepository.findById(userId);
-        logger.info(Integer.toString(user.get().getUserId()));
-        logger.info(Boolean.toString(user.isEmpty()));
         if(user.isEmpty()) throw new UserNotFoundException("There`s no user with id " + userId);
-        logger.info("Here");
+
         //unfollowing form exercises and functions
         for(Exercise e : user.get().getFollowedExercises()){
             e.getFollowers().remove(user.get());
@@ -107,7 +130,6 @@ public class UserResource {
             f.getFollowers().remove(user.get());
         }
 
-        logger.info("Here 3");
 
         //deleting exercises manually in order to manually unfollow its followers
         for(Exercise e : user.get().getCreatedExercises()){
@@ -115,13 +137,11 @@ public class UserResource {
             exerciseResource.deleteExercise(userId, e.getExerciseId());
         }
 
-        logger.info("Here 4");
 
         for(Function  f: user.get().getCreatedFunctions()){
             FunctionResource functionResource = new FunctionResource(functionJpaRepository, userJpaRepository, exerciseJpaRepository, normalMapper);
             functionResource.deleteFunction(userId, f.getFunctionId());
         }
-        logger.info("Here 2");
         //finally, deleting the user
         userJpaRepository.deleteById(userId);
     } 
@@ -129,6 +149,8 @@ public class UserResource {
     //registering new user
     @PostMapping("/users")
     public void registerAppUser(@RequestBody @Valid AppUserDetails userDetails){
+        //make accessable only for admin???
+        
         //other operations, when registered
         userJpaRepository.save(new AppUser(userDetails));
     }
