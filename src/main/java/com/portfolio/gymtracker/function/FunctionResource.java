@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,8 +22,8 @@ import com.portfolio.gymtracker.exceptions.ExerciseNotFoundException;
 import com.portfolio.gymtracker.exceptions.FunctionNotFoundException;
 import com.portfolio.gymtracker.exceptions.UserNotFoundException;
 import com.portfolio.gymtracker.exercise.Exercise;
-
 import com.portfolio.gymtracker.user.UserJpaRepository;
+import static com.portfolio.gymtracker.security.AccessChecking.checkIfUserAccessable;
 
 import jakarta.validation.Valid;
 
@@ -53,31 +55,45 @@ public class FunctionResource {
         return normalMapper.mapFunctionList(functionJpaRepository.findAllByPublished());
     }
 
+    @GetMapping("/public/functions/{function_id}")
+    public MappingJacksonValue getPublishedFunctionById(@PathVariable("function_id") int functionId){
+        Optional<Function> function = functionJpaRepository.findById(functionId);
+        if(function.isEmpty()) throw new FunctionNotFoundException("The function with id " + functionId + " was not found");
+        if(!function.get().isPublished()) throw new RuntimeException("The function is not published");
+
+        return normalMapper.mapFunctionList(functionJpaRepository.findAllByPublished());
+    }
+
     //get function created by the user
     @GetMapping("/users/{user_id}/functions/created")
-    public MappingJacksonValue getCreatedFunctionsList(@PathVariable("user_id") int userId){
-        //depending on the request author we may or may not show private functions
-        if(!userJpaRepository.existsById(userId)) throw new UserNotFoundException("There`s no user with id " + userId);
+    public MappingJacksonValue getCreatedFunctionsList(Authentication authentication, @PathVariable("user_id") int userId){
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("User was not found");
+        
+        checkIfUserAccessable(authentication, user.get());
         
         return normalMapper.mapFunctionList(userJpaRepository.findById(userId).get().getCreatedFunctions());
     }
 
     //get functions, that user is followed on
     @GetMapping("/users/{user_id}/functions/followed")
-    public MappingJacksonValue getFollowedFunctionsList(@PathVariable("user_id") int userId){
-        //depending on privacy settings, we may or may not show the functions user is followed on to the third party
-        if(!userJpaRepository.existsById(userId)) throw new UserNotFoundException("There`s no user with id " + userId);
+    public MappingJacksonValue getFollowedFunctionsList(Authentication authentication, @PathVariable("user_id") int userId){
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("User was not found");
+        
+        checkIfUserAccessable(authentication, user.get());
 
         return normalMapper.mapFunctionList(userJpaRepository.findById(userId).get().getFollowedFunctions());
     }
 
     //get all functions of the user
     @GetMapping("/users/{user_id}/functions")
-    public MappingJacksonValue getAllExercisesList(@PathVariable("user_id") int userId){
-
+    public MappingJacksonValue getAllExercisesList(Authentication authentication, @PathVariable("user_id") int userId){
 
         Optional<AppUser> user = userJpaRepository.findById(userId);
-        if(user.isEmpty()) throw new UserNotFoundException("There`s no user with id " + userId);
+        if(user.isEmpty()) throw new UserNotFoundException("User was not found");
+        
+        checkIfUserAccessable(authentication, user.get());
 
         List<Function> functions = user.get().getCreatedFunctions();
         functions.addAll(user.get().getFollowedFunctions());
@@ -87,35 +103,48 @@ public class FunctionResource {
 
     //get function details for the current user
     @GetMapping("/users/{user_id}/functions/{function_id}")
-    public MappingJacksonValue getFunctionById(@PathVariable("user_id") int userId, @PathVariable("function_id") int functionId){
-        //depending if user is author, privacy and if function is published
-        if(!userJpaRepository.existsById(userId)) throw new UserNotFoundException("There`s no user with id " + userId);
+    public MappingJacksonValue getFunctionById(Authentication authentication, @PathVariable("user_id") int userId, 
+        @PathVariable("function_id") int functionId
+    ){
+
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("User was not found");
+
         Optional<Function> function = functionJpaRepository.findById(functionId);
         if(function.isEmpty()) throw new FunctionNotFoundException("There`s no function with id" + functionId);
+
+        checkIfUserAccessable(authentication, user.get());
     
         return normalMapper.mapFunctionDetailed(function.get());
     }
 
     //get functions of the exercise
     @GetMapping("/users/{user_id}/functions/exercise/{exercise_id}")
-    public MappingJacksonValue getFunctionsOfTheExercise(@PathVariable("user_id") int userId, @PathVariable("exercise_id") int exerciseId){
-        //depending on privacy settings and etc
-        if(!userJpaRepository.existsById(userId)) throw new UserNotFoundException("There`s no user with id " + userId);
+    public MappingJacksonValue getFunctionsOfTheExercise(Authentication authentication, @PathVariable("user_id") int userId, 
+        @PathVariable("exercise_id") int exerciseId
+    ){
+
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("User was not found");
 
         Optional<Exercise> exercise = exerciseJpaRepository.findById(exerciseId);
-        if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
+        if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no function with id" + exerciseId);
+
+        checkIfUserAccessable(authentication, user.get());
 
         return normalMapper.mapFunctionList(exercise.get().getFunctionsIncluded());
     }
 
     @DeleteMapping("/users/{user_id}/functions/{function_id}")
-    public void deleteFunction(@PathVariable("user_id") int userId, @PathVariable("function_id") int functionId){
-        //of course there must be check for security and validation
-        if(! userJpaRepository.existsById(userId)) throw new UserNotFoundException("There`s no user with id " + userId);
+    public void deleteFunction(Authentication authentication, @PathVariable("user_id") int userId, @PathVariable("function_id") int functionId){
 
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("User was not found");
 
         Optional<Function> function = functionJpaRepository.findById(functionId);
         if(function.isEmpty()) throw new FunctionNotFoundException("There`s no function with id" + functionId);
+
+        checkIfUserAccessable(authentication, user.get());
 
         for(Exercise e : function.get().getExercises()){
             e.getFunctionsIncluded().remove(function.get());
@@ -131,22 +160,63 @@ public class FunctionResource {
 
     //adding function    
     @PostMapping("/users/{user_id}/functions")
-    public void createFunction(@PathVariable("user_id") int userId, @Valid @RequestBody FunctionDetails functionDetails){
-        if(! userJpaRepository.existsById(userId)) throw new UserNotFoundException("There`s no user with id " + userId);
+    public void createFunction(Authentication authentication, @PathVariable("user_id") int userId, @Valid @RequestBody FunctionDetails functionDetails){
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("User was not found");
+
+        checkIfUserAccessable(authentication, user.get());
 
         functionJpaRepository.save(new Function(userJpaRepository.findById(userId).get(), false, functionDetails));
     }
 
     //changing function basic details
     @PutMapping("/users/{user_id}/functions/{function_id}")
-    public void updateFunction(@PathVariable("user_id") int userId, @PathVariable("function_id") int functionId, @Valid @RequestBody FunctionDetails functionDetails){
-        if(userJpaRepository.existsById(userId)) throw new UserNotFoundException("There`s no user with id " + userId);
-
+    public void updateFunction(Authentication authentication, @PathVariable("user_id") int userId, 
+        @PathVariable("function_id") int functionId, @Valid @RequestBody FunctionDetails functionDetails
+    ){
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("User was not found");
 
         Optional<Function> function = functionJpaRepository.findById(functionId);
         if(function.isEmpty()) throw new FunctionNotFoundException("There`s no function with id" + functionId);
+        
+        checkIfUserAccessable(authentication, user.get());
+        
         function.get().setFunctionDetails(functionDetails);
+        functionJpaRepository.save(function.get());
+    }
 
+    @PutMapping("/users/{user_id}/functions/{function_id}/publish")
+    @PreAuthorize("hasRole('MODER')")
+    public void publishFunction(Authentication authentication, @PathVariable("user_id") int userId, 
+        @PathVariable("function_id") int functionId
+    ){ 
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("There`s no user with id " + userId);
+        
+        Optional<Function> function = functionJpaRepository.findById(functionId);
+        if(function.isEmpty()) throw new FunctionNotFoundException("There`s no function with id " + functionId);
+
+        checkIfUserAccessable(authentication, user.get());
+
+        function.get().setPublished(true);
+        functionJpaRepository.save(function.get());
+    }
+
+    @PutMapping("/users/{user_id}/functions/{function_id}/unpublish")
+    @PreAuthorize("hasRole('MODER')")
+    public void unpublishFunction(Authentication authentication, @PathVariable("user_id") int userId, 
+        @PathVariable("function_id") int functionId
+    ){ 
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("There`s no user with id " + userId);
+        
+        Optional<Function> function = functionJpaRepository.findById(functionId);
+        if(function.isEmpty()) throw new FunctionNotFoundException("There`s no function with id " + functionId);
+
+        checkIfUserAccessable(authentication, user.get());
+
+        function.get().setPublished(false);
         functionJpaRepository.save(function.get());
     }
 

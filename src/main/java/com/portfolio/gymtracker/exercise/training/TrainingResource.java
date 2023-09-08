@@ -3,6 +3,7 @@ package com.portfolio.gymtracker.exercise.training;
 import java.util.Optional;
 
 import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import com.portfolio.gymtracker.exercise.Exercise;
 import com.portfolio.gymtracker.exercise.ExerciseJpaRepository;
 import com.portfolio.gymtracker.user.AppUser;
 import com.portfolio.gymtracker.user.UserJpaRepository;
+import static com.portfolio.gymtracker.security.AccessChecking.checkIfUserAccessable;
 
 import jakarta.validation.Valid;
 
@@ -44,19 +46,30 @@ public class TrainingResource {
 
     //getting trainings of the user on this exercise
     @GetMapping("/users/{user_id}/exercises/{exercise_id}/trainings")
-    public MappingJacksonValue getTrainingsList(@PathVariable("user_id") int userId, @PathVariable("exercise_id") int exerciseId){
-        if(! userJpaRepository.existsById(userId)) throw new UserNotFoundException("There`s no user with id " + userId);
-        if(! exerciseJpaRepository.existsById(exerciseId)) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
+    public MappingJacksonValue getTrainingsList(Authentication authentication, @PathVariable("user_id") int userId, @PathVariable("exercise_id") int exerciseId){
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("There`s no user with id " + userId);
+        
+        Optional<Exercise> exercise = exerciseJpaRepository.findById(exerciseId);
+        if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
+
+        checkIfUserAccessable(authentication, user.get());
 
         return normalMapper.mapTrainingList(trainingJpaRepository.findAllByUserIdAndExerciseId(userId, exerciseId));
     }
 
     @GetMapping("/users/{user_id}/exercises/{exercise_id}/trainings/{training_id}")
-    public MappingJacksonValue getTraining(@PathVariable("user_id") int userId, @PathVariable("exercise_id") int exerciseId, @PathVariable("training_id") int trainingId){
+    public MappingJacksonValue getTraining(Authentication authentication, @PathVariable("user_id") int userId, 
+        @PathVariable("exercise_id") int exerciseId, @PathVariable("training_id") int trainingId
+    ){
+          
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("There`s no user with id " + userId);
         
-        
-        if(! userJpaRepository.existsById(userId)) throw new UserNotFoundException("There`s no user with id " + userId);
-        if(! exerciseJpaRepository.existsById(exerciseId)) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
+        Optional<Exercise> exercise = exerciseJpaRepository.findById(exerciseId);
+        if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
+
+        checkIfUserAccessable(authentication, user.get());
 
         Optional<Training> training = trainingJpaRepository.findByUserIdAndExerciseIdAndTrainingId(userId, exerciseId, trainingId);
         if(training.isEmpty()) throw new TrainingNotFoundException("There`s no training with id " + trainingId);
@@ -68,18 +81,28 @@ public class TrainingResource {
 
     //getting all trainings of the user
     @GetMapping("/users/{user_id}/trainings")
-    public MappingJacksonValue getAllUserTrainings(@PathVariable("user_id") int userId){
+    public MappingJacksonValue getAllUserTrainings(Authentication authentication, @PathVariable("user_id") int userId){
 
-        if(! userJpaRepository.existsById(userId)) throw new UserNotFoundException("There`s no user with id " + userId);
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("There`s no user with id " + userId);
+        
+        checkIfUserAccessable(authentication, user.get());
 
         return normalMapper.mapTrainingList(trainingJpaRepository.findAllByUserId(userId));
     }
 
     @DeleteMapping("/users/{user_id}/exercises/{exercise_id}/trainings/{training_id}")
-    public void deleteTraining(@PathVariable("user_id") int userId, @PathVariable("exercise_id") int exerciseId, @PathVariable("training_id") int trainingId){
-        //of course there must be validation and security
-        if(! userJpaRepository.existsById(userId)) throw new UserNotFoundException("There`s no user with id " + userId);
-        if(! exerciseJpaRepository.existsById(exerciseId)) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
+    public void deleteTraining(Authentication authentication, @PathVariable("user_id") int userId, @PathVariable("exercise_id") int exerciseId, 
+        @PathVariable("training_id") int trainingId
+    ){
+
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("There`s no user with id " + userId);
+        
+        Optional<Exercise> exercise = exerciseJpaRepository.findById(exerciseId);
+        if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
+
+        checkIfUserAccessable(authentication, user.get());
 
         Optional<Training> training = trainingJpaRepository.findByUserIdAndExerciseIdAndTrainingId(userId, exerciseId, trainingId);
         if(training.isEmpty()) throw new TrainingNotFoundException("There`s no training with id " + trainingId);
@@ -89,33 +112,49 @@ public class TrainingResource {
 
     //delete all training data for current exercise
     @DeleteMapping("/users/{user_id}/exercises/{exercise_id}/trainings")
-    public void deleteTrainingsForExercise(@PathVariable("user_id") int userId, @PathVariable("exercise_id") int exerciseId){
-        //of course there must be validation and security
-        if(! userJpaRepository.existsById(userId)) throw new UserNotFoundException("There`s no user with id " + userId);
-        if(! exerciseJpaRepository.existsById(exerciseId)) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
+    public void deleteTrainingsForExercise(Authentication authentication, @PathVariable("user_id") int userId, 
+        @PathVariable("exercise_id") int exerciseId
+    ){
+
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("There`s no user with id " + userId);
+        
+        Optional<Exercise> exercise = exerciseJpaRepository.findById(exerciseId);
+        if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
+
+        checkIfUserAccessable(authentication, user.get());
 
         trainingJpaRepository.deleteAll(trainingJpaRepository.findAllByUserIdAndExerciseId(userId, exerciseId)); 
     }
 
     //delete all training data for current user
     @DeleteMapping("/users/{user_id}/trainings")
-    public void deleteTrainingsForUser(@PathVariable("user_id") int userId){
-        //of course there must be validation and security
-        if(! userJpaRepository.existsById(userId)) throw new UserNotFoundException("There`s no user with id " + userId);
+    public void deleteTrainingsForUser(Authentication authentication, @PathVariable("user_id") int userId){
+        
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("There`s no user with id " + userId);
+        
+        checkIfUserAccessable(authentication, user.get());
 
         trainingJpaRepository.deleteAll(trainingJpaRepository.findAllByUserId(userId)); 
     }
 
     //adding training
     @PostMapping("/users/{user_id}/exercises/{exercise_id}/trainings")
-    public void createTraining(@PathVariable("user_id") int userId, @PathVariable("exercise_id") int exerciseId, @Valid @RequestBody Training training){
+    public void createTraining(Authentication authentication, @PathVariable("user_id") int userId, @PathVariable("exercise_id") int exerciseId, 
+        @Valid @RequestBody Training training
+    ){
         
         Optional<AppUser> user = userJpaRepository.findById(userId);
         if(user.isEmpty()) throw new UserNotFoundException("There`s no user with id " + userId);
-        training.setUser(user.get());
-
+        
         Optional<Exercise> exercise = exerciseJpaRepository.findById(exerciseId);
         if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
+        
+        checkIfUserAccessable(authentication, user.get());
+
+
+        training.setUser(user.get());
         training.setExercise(exercise.get());
 
         user.get().setTrainingsCount(user.get().getTrainingsCount() + 1);
@@ -126,13 +165,12 @@ public class TrainingResource {
 
 
     @PutMapping("/users/{user_id}/exercises/{exercise_id}/trainings/{training_id}")
-    public void updateTrainingById(@PathVariable("user_id") int userId, @PathVariable("exercise_id") int exerciseId, 
+    public void updateTrainingById(Authentication authentication, @PathVariable("user_id") int userId, @PathVariable("exercise_id") int exerciseId, 
         @PathVariable("training_id") int trainingId, @Valid @RequestBody Training training
     ){
 
         Optional<AppUser> user = userJpaRepository.findById(userId);
         if(user.isEmpty()) throw new UserNotFoundException("There`s no user with id " + userId);
-        training.setUser(user.get());
 
         if( ! user.get().getTrainingsList().stream().anyMatch( (tr) -> {
             return tr.getTrainingId() == trainingId;
@@ -140,6 +178,11 @@ public class TrainingResource {
 
         Optional<Exercise> exercise = exerciseJpaRepository.findById(exerciseId);
         if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
+
+        checkIfUserAccessable(authentication, user.get());
+
+        
+        training.setUser(user.get());
         training.setExercise(exercise.get());
 
         training.setTrainingId(trainingId);
