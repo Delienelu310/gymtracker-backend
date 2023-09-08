@@ -25,6 +25,8 @@ import com.portfolio.gymtracker.function.FunctionJpaRepository;
 import com.portfolio.gymtracker.user.AppUser;
 import com.portfolio.gymtracker.user.UserJpaRepository;
 import static com.portfolio.gymtracker.security.AccessChecking.checkIfUserAccessable;
+import static com.portfolio.gymtracker.security.AccessChecking.checkIfExerciseAccessable;
+import static com.portfolio.gymtracker.security.AccessChecking.checkIfFunctionAccessable;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Digits;
@@ -82,6 +84,8 @@ public class ExerciseResource{
 
         //checking if user has access
         checkIfUserAccessable(authentication, user.get());
+        checkIfExerciseAccessable(user.get(), exercise.get());
+
 
         return normalMapper.mapExerciseDetailed(exercise.get());
     }
@@ -132,6 +136,7 @@ public class ExerciseResource{
         if(function.isEmpty()) throw new FunctionNotFoundException("There`s no function with id " + functionId);
 
         checkIfUserAccessable(authentication, user.get());
+        checkIfFunctionAccessable(user.get(), function.get());
 
         return  normalMapper.mapExerciseList( ((List<Exercise>)getAllExercisesList(authentication, userId).getValue()).stream().filter(
             exercise -> {
@@ -151,6 +156,7 @@ public class ExerciseResource{
         if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
 
         checkIfUserAccessable(authentication, user.get());
+        if(user.get().getUserId() != exercise.get().getAuthor().getUserId()) throw new RuntimeException("You have not access to this action");
 
         for(AppUser follower : exercise.get().getFollowers()){
             follower.getFollowedExercises().remove(exercise.get());
@@ -183,6 +189,7 @@ public class ExerciseResource{
         if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
 
         checkIfUserAccessable(authentication, user.get());
+        if(user.get().getUserId() != exercise.get().getAuthor().getUserId()) throw new RuntimeException("You have not access to this action");
 
         exercise.get().setExerciseDetails(exerciseDetails);
         exerciseJpaRepository.save(exercise.get());
@@ -203,6 +210,8 @@ public class ExerciseResource{
         if(function.isEmpty()) throw new FunctionNotFoundException("There`s no function with id " + functionId);
 
         checkIfUserAccessable(authentication, user.get());
+        if(user.get().getUserId() != exercise.get().getAuthor().getUserId()) throw new RuntimeException("You have not access to this action");
+        checkIfFunctionAccessable(user.get(), function.get());
 
         exercise.get().getFunctionsIncluded().add(function.get());
         exercise.get().getFunctionPerformance().put(functionId, 1.0);
@@ -225,6 +234,8 @@ public class ExerciseResource{
         if(function.isEmpty()) throw new FunctionNotFoundException("There`s no function with id " + functionId);
 
         checkIfUserAccessable(authentication, user.get());
+        if(user.get().getUserId() != exercise.get().getAuthor().getUserId()) throw new RuntimeException("You have not access to this action");
+        checkIfFunctionAccessable(user.get(), function.get());
 
         exercise.get().getFunctionsIncluded().remove(function.get());
         exercise.get().getFunctionPerformance().remove(functionId);
@@ -246,6 +257,8 @@ public class ExerciseResource{
         if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
 
         checkIfUserAccessable(authentication, user.get());
+        if(user.get().getUserId() != exercise.get().getAuthor().getUserId()) throw new RuntimeException("You have not access to this action");
+        
 
         if(value == 0) exercise.get().getFunctionPerformance().remove(functionId);
         else exercise.get().getFunctionPerformance().put(functionId, value);
@@ -263,6 +276,8 @@ public class ExerciseResource{
         if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
 
         checkIfUserAccessable(authentication, user.get());
+        if(user.get().getUserId() != exercise.get().getAuthor().getUserId()) throw new RuntimeException("You have not access to this action");
+        
 
         exercise.get().setPublished(true);
         exerciseJpaRepository.save(exercise.get());
@@ -280,6 +295,7 @@ public class ExerciseResource{
         if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
 
         checkIfUserAccessable(authentication, user.get());
+        if(user.get().getUserId() != exercise.get().getAuthor().getUserId()) throw new RuntimeException("You have not access to this action");
 
         exercise.get().setPublished(false);
         exerciseJpaRepository.save(exercise.get());

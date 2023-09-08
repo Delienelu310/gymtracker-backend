@@ -75,7 +75,7 @@ public class JwtSecurityConfiguration {
         var admin = User.withUsername("delienelu")
             .password("somepassword")
             .passwordEncoder(str -> passwordEncoder().encode(str))
-            .roles("ADMIN")
+            .roles("ADMIN", "MODER", "USER")
             .build();
 
         var jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);

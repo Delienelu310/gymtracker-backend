@@ -21,6 +21,7 @@ import com.portfolio.gymtracker.exercise.ExerciseJpaRepository;
 import com.portfolio.gymtracker.user.AppUser;
 import com.portfolio.gymtracker.user.UserJpaRepository;
 import static com.portfolio.gymtracker.security.AccessChecking.checkIfUserAccessable;
+import static com.portfolio.gymtracker.security.AccessChecking.checkIfExerciseAccessable;
 
 import jakarta.validation.Valid;
 
@@ -54,6 +55,7 @@ public class TrainingResource {
         if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
 
         checkIfUserAccessable(authentication, user.get());
+        checkIfExerciseAccessable(user.get(), exercise.get());
 
         return normalMapper.mapTrainingList(trainingJpaRepository.findAllByUserIdAndExerciseId(userId, exerciseId));
     }
@@ -70,6 +72,7 @@ public class TrainingResource {
         if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
 
         checkIfUserAccessable(authentication, user.get());
+        checkIfExerciseAccessable(user.get(), exercise.get());
 
         Optional<Training> training = trainingJpaRepository.findByUserIdAndExerciseIdAndTrainingId(userId, exerciseId, trainingId);
         if(training.isEmpty()) throw new TrainingNotFoundException("There`s no training with id " + trainingId);
@@ -103,6 +106,7 @@ public class TrainingResource {
         if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
 
         checkIfUserAccessable(authentication, user.get());
+        checkIfExerciseAccessable(user.get(), exercise.get());
 
         Optional<Training> training = trainingJpaRepository.findByUserIdAndExerciseIdAndTrainingId(userId, exerciseId, trainingId);
         if(training.isEmpty()) throw new TrainingNotFoundException("There`s no training with id " + trainingId);
@@ -123,6 +127,7 @@ public class TrainingResource {
         if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
 
         checkIfUserAccessable(authentication, user.get());
+        checkIfExerciseAccessable(user.get(), exercise.get());
 
         trainingJpaRepository.deleteAll(trainingJpaRepository.findAllByUserIdAndExerciseId(userId, exerciseId)); 
     }
@@ -152,13 +157,12 @@ public class TrainingResource {
         if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
         
         checkIfUserAccessable(authentication, user.get());
-
+        checkIfExerciseAccessable(user.get(), exercise.get());
 
         training.setUser(user.get());
         training.setExercise(exercise.get());
 
         user.get().setTrainingsCount(user.get().getTrainingsCount() + 1);
-        training.setTrainingId(user.get().getTrainingsCount());
         
         trainingJpaRepository.save(training);
     }
@@ -180,7 +184,7 @@ public class TrainingResource {
         if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exerciseId);
 
         checkIfUserAccessable(authentication, user.get());
-
+        checkIfExerciseAccessable(user.get(), exercise.get());
         
         training.setUser(user.get());
         training.setExercise(exercise.get());

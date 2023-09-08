@@ -11,10 +11,10 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 
 @Entity
@@ -22,18 +22,16 @@ import jakarta.validation.constraints.Size;
 public class Training {
 
     @Id
-    // @Null
+    @GeneratedValue
     private long trainingId;
 
     @ManyToOne(fetch= FetchType.LAZY)
     @JsonFilter("UserFilter")
-    // @Null
     private AppUser user;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonFilter("ExerciseFilter")
-    // @Null
     private Exercise exercise;
 
     @ElementCollection

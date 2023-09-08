@@ -24,6 +24,8 @@ import com.portfolio.gymtracker.exceptions.UserNotFoundException;
 import com.portfolio.gymtracker.exercise.Exercise;
 import com.portfolio.gymtracker.user.UserJpaRepository;
 import static com.portfolio.gymtracker.security.AccessChecking.checkIfUserAccessable;
+import static com.portfolio.gymtracker.security.AccessChecking.checkIfExerciseAccessable;
+import static com.portfolio.gymtracker.security.AccessChecking.checkIfFunctionAccessable;
 
 import jakarta.validation.Valid;
 
@@ -114,6 +116,7 @@ public class FunctionResource {
         if(function.isEmpty()) throw new FunctionNotFoundException("There`s no function with id" + functionId);
 
         checkIfUserAccessable(authentication, user.get());
+        checkIfFunctionAccessable(user.get(), function.get());
     
         return normalMapper.mapFunctionDetailed(function.get());
     }
@@ -131,6 +134,7 @@ public class FunctionResource {
         if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no function with id" + exerciseId);
 
         checkIfUserAccessable(authentication, user.get());
+        checkIfExerciseAccessable(user.get(), exercise.get());
 
         return normalMapper.mapFunctionList(exercise.get().getFunctionsIncluded());
     }
@@ -145,6 +149,7 @@ public class FunctionResource {
         if(function.isEmpty()) throw new FunctionNotFoundException("There`s no function with id" + functionId);
 
         checkIfUserAccessable(authentication, user.get());
+        if(user.get().getUserId() != function.get().getAuthor().getUserId()) throw new RuntimeException("You have not access to this action");
 
         for(Exercise e : function.get().getExercises()){
             e.getFunctionsIncluded().remove(function.get());
@@ -181,7 +186,8 @@ public class FunctionResource {
         if(function.isEmpty()) throw new FunctionNotFoundException("There`s no function with id" + functionId);
         
         checkIfUserAccessable(authentication, user.get());
-        
+        if(user.get().getUserId() != function.get().getAuthor().getUserId()) throw new RuntimeException("You have not access to this action");
+
         function.get().setFunctionDetails(functionDetails);
         functionJpaRepository.save(function.get());
     }
@@ -198,6 +204,7 @@ public class FunctionResource {
         if(function.isEmpty()) throw new FunctionNotFoundException("There`s no function with id " + functionId);
 
         checkIfUserAccessable(authentication, user.get());
+        if(user.get().getUserId() != function.get().getAuthor().getUserId()) throw new RuntimeException("You have not access to this action");
 
         function.get().setPublished(true);
         functionJpaRepository.save(function.get());
@@ -215,6 +222,7 @@ public class FunctionResource {
         if(function.isEmpty()) throw new FunctionNotFoundException("There`s no function with id " + functionId);
 
         checkIfUserAccessable(authentication, user.get());
+        if(user.get().getUserId() != function.get().getAuthor().getUserId()) throw new RuntimeException("You have not access to this action");
 
         function.get().setPublished(false);
         functionJpaRepository.save(function.get());

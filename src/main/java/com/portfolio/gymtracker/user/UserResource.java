@@ -274,9 +274,7 @@ public class UserResource {
     }
 
     @PutMapping("/users/{user_id}/publish")
-    public void publishExercise(Authentication authentication, @PathVariable("user_id") int userId, 
-        @PathVariable("exercise_id") int exerciseId
-    ){ 
+    public void publishExercise(Authentication authentication, @PathVariable("user_id") int userId){ 
         Optional<AppUser> user = userJpaRepository.findById(userId);
         if(user.isEmpty()) throw new UserNotFoundException("There`s no user with id " + userId);
 

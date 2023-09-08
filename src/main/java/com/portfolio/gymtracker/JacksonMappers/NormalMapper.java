@@ -148,13 +148,15 @@ public class NormalMapper {
             "trainingId",
             "trainingDetails",
             "takes",
-            "user"
+            "user",
+            "exercise"
         );
         FilterProvider filterProvider = new SimpleFilterProvider()
             .addFilter("TrainingFilter", filter)
             .addFilter("TrainingDetailsFilter", SimpleBeanPropertyFilter.serializeAll())
             .addFilter("UserFilter", SimpleBeanPropertyFilter.filterOutAllExcept("userId", "appUserDetails"))
-            .addFilter("UserDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept("username"));
+            .addFilter("UserDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept("username"))
+            .addFilter("ExerciseFilter", SimpleBeanPropertyFilter.filterOutAllExcept("exerciseId"));
         mappingJacksonValue.setFilters(filterProvider);
 
         return mappingJacksonValue;
@@ -166,11 +168,13 @@ public class NormalMapper {
         SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept( 
             "trainingDetails",
             "takes", //in future change for performance
-            "trainingId"
+            "trainingId",
+            "exercise"
         );
         FilterProvider filterProvider = new SimpleFilterProvider()
             .addFilter("TrainingFilter", filter)
-            .addFilter("TrainingDetailsFilter", SimpleBeanPropertyFilter.serializeAll());
+            .addFilter("TrainingDetailsFilter", SimpleBeanPropertyFilter.serializeAll())
+            .addFilter("ExerciseFilter", SimpleBeanPropertyFilter.filterOutAllExcept("exerciseId"));
         mappingJacksonValue.setFilters(filterProvider);
 
         return mappingJacksonValue;
