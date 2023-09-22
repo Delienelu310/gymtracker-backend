@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +33,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Digits;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 public class ExerciseResource{
 
     private Logger logger = LoggerFactory.getLogger(getClass());

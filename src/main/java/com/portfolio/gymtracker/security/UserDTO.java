@@ -1,7 +1,6 @@
 package com.portfolio.gymtracker.security;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 public class UserDTO {
     
@@ -22,6 +21,11 @@ public class UserDTO {
         this.password = password;
         this.email = email;
     }
+
+    public UserDTO(){
+
+    }
+
     public String getUsername() {
         return username;
     }

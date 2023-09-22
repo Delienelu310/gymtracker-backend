@@ -51,7 +51,7 @@ public class NormalMapper {
                 "appUserDetails",
                 "userId"
             )).addFilter("UserDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept(
-                "username", "userId", "fullname", "email"
+                "username", "fullname", "email"
         ));
         mappingJacksonValue.setFilters(filterProvider);
 
@@ -91,13 +91,15 @@ public class NormalMapper {
             "exerciseDetails", 
             "published",
             "exerciseId",
-            "author"
+            "author",
+            "functionsIncluded"
         );
         FilterProvider filterProvider = new SimpleFilterProvider()
             .addFilter("ExerciseFilter", filter)
             .addFilter("ExerciseDetailsFilter", SimpleBeanPropertyFilter.serializeAll())
             .addFilter("UserFilter", SimpleBeanPropertyFilter.filterOutAllExcept("userId", "appUserDetails"))
-            .addFilter("UserDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept("username"));
+            .addFilter("UserDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept("username"))
+            .addFilter("FunctionFilter", SimpleBeanPropertyFilter.filterOutAllExcept("functionId"));
         mappingJacksonValue.setFilters(filterProvider);
 
         return mappingJacksonValue;

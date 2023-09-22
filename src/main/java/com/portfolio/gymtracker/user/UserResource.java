@@ -9,7 +9,7 @@ import org.springframework.http.converter.json.MappingJacksonValue;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +32,7 @@ import static com.portfolio.gymtracker.security.AccessChecking.checkIfUserAccess
 import jakarta.validation.Valid;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 public class UserResource {
 
     Logger logger = LoggerFactory.getLogger(getClass());
@@ -87,7 +88,7 @@ public class UserResource {
     }
 
     //getting followers of an exercise
-    @GetMapping("/public/exercise/{exercise_id}/followers")
+    @GetMapping("/public/exercises/{exercise_id}/followers")
     public MappingJacksonValue getUsersFollowingExercise(@PathVariable("exercise_id") int exercise_id){
 
         //checking if the exercise exists
@@ -95,11 +96,13 @@ public class UserResource {
         if(exercise.isEmpty()) throw new ExerciseNotFoundException("There`s no exercise with id " + exercise_id);
 
 
-        return normalMapper.mapUserList(exercise.get().getFollowers()); 
+        return normalMapper.mapUserList(exercise.get().getFollowers().stream().filter(
+            follower -> follower.isPublished()
+        ).toList()); 
     }
     
     //getting followers of a function
-    @GetMapping("/public/function/{function_id}/followers")
+    @GetMapping("/public/functions/{function_id}/followers")
     public MappingJacksonValue getUsersFollowingFunction(@PathVariable("function_id") int function_id){
 
         //does functio nactually exist?

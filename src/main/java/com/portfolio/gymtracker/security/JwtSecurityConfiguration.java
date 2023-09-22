@@ -18,6 +18,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
@@ -32,23 +33,59 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsUtils;
 
 @Configuration
 public class JwtSecurityConfiguration {
+
+    // @Bean
+    // public CorsConfigurationSource corsConfigurationSource() {
+    //     CorsConfiguration configuration = new CorsConfiguration();
+    //     configuration.setAllowedOrigins(List.of("*")); // Set the allowed origins
+    //     configuration.setAllowedMethods(List.of("*")); // Set the allowed HTTP methods
+    //     configuration.addAllowedHeader("*");   // Set the allowed headers
+    //     configuration.setAllowCredentials(true); // Allow credentials (if needed)
+
+    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    //     source.registerCorsConfiguration("/**", configuration); // Apply the configuration to all endpoints
+
+    //     return source;
+    // }
+
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
-        http
-            .authorizeHttpRequests(auth -> {
-            auth
-                .requestMatchers(new AntPathRequestMatcher("/authenticate")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/register")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/public/**")).anonymous()
-                .anyRequest().authenticated();
-        });
         http.sessionManagement(
             session -> 
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS
         ));
+
+        // http.cors().configurationSource(corsConfigurationSource());
+        http.cors();
+        http.authorizeHttpRequests(auth -> {
+                auth
+                    // .antMatchers(HttpMethod.OPTIONS,"/**").permitAll()
+                    // .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
+                    .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+                    .requestMatchers(PathRequest.toH2Console()).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/authenticate")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/register")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/public/**")).permitAll()
+                    
+                    .anyRequest().authenticated();
+            });
+            // .authorizeRequests(
+            //     auth -> 
+            //         auth
+            //             .antMatchers(HttpMethod.OPTIONS,"/**")
+            //             .permitAll()
+            //             .requestMatchers(PathRequest.toH2Console())
+            //             .permitAll()
+            //             .antMatchers("/h2-console/**")
+            //             .permitAll()
+            //             .anyRequest()
+            //             .authenticated()); // (3)
         http.httpBasic();
         http.csrf().disable();
 

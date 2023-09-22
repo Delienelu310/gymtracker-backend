@@ -63,7 +63,7 @@ public class FunctionResource {
         if(function.isEmpty()) throw new FunctionNotFoundException("The function with id " + functionId + " was not found");
         if(!function.get().isPublished()) throw new RuntimeException("The function is not published");
 
-        return normalMapper.mapFunctionList(functionJpaRepository.findAllByPublished());
+        return normalMapper.mapFunctionDetailed(function.get());
     }
 
     //get function created by the user

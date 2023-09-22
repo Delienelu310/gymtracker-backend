@@ -1,13 +1,11 @@
 package com.portfolio.gymtracker.security;
 
-import javax.sql.DataSource;
-
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +16,7 @@ import com.portfolio.gymtracker.user.UserResource;
 import jakarta.validation.Valid;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 public class SecurityResource {
     
     private PasswordEncoder passwordEncoder;
@@ -31,7 +30,7 @@ public class SecurityResource {
     }
 
     @PostMapping("/register")
-    public void register(@RequestBody @Valid UserDTO userDTO){
+    public void register(@RequestBody  @Valid UserDTO userDTO){
 
         //firstly check if everything is okay before registration
         
