@@ -35,7 +35,7 @@ public class AccessChecking {
 
     public static void checkIfFunctionAccessable(AppUser user, Function function){
         if(! user.getCreatedFunctions().contains(function))
-            if(!user.getFollowedFunctions().contains(function))
+            if(!function.isPublished())
                 throw new RuntimeException("You have not access to this page");
     }
 }

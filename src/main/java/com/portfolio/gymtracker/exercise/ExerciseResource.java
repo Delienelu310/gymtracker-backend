@@ -249,8 +249,9 @@ public class ExerciseResource{
     @PutMapping("/users/{user_id}/exercises/{exercise_id}/functions/{function_id}/set/{value}")
     public void removeFunctionToExercise(Authentication authentication, @PathVariable("user_id") int userId, 
         @PathVariable("exercise_id") int exerciseId, @PathVariable("function_id") int functionId, 
-        @PathVariable @Digits(fraction = 1, integer = 2) double value
+        @PathVariable double value
     ){
+        logger.info("Value setted: " + value);
         Optional<AppUser> user = userJpaRepository.findById(userId);
         if(user.isEmpty()) throw new UserNotFoundException("There`s no user with id " + userId);
         if(! functionJpaRepository.existsById(functionId)) throw new FunctionNotFoundException("There`s no function with id " + functionId);
@@ -261,9 +262,14 @@ public class ExerciseResource{
         checkIfUserAccessable(authentication, user.get());
         if(user.get().getUserId() != exercise.get().getAuthor().getUserId()) throw new RuntimeException("You have not access to this action");
         
-
+        logger.info("Continue");
         if(value == 0) exercise.get().getFunctionPerformance().remove(functionId);
-        else exercise.get().getFunctionPerformance().put(functionId, value);
+        else {
+            exercise.get().getFunctionPerformance().remove(functionId);
+            exercise.get().getFunctionPerformance().put(functionId, value);
+            logger.info("Value setted inside: " + exercise.get().getFunctionPerformance().get(functionId));
+        }
+        exerciseJpaRepository.save(exercise.get());
     }
 
     @PutMapping("/users/{user_id}/exercises/{exercise_id}/publish")
