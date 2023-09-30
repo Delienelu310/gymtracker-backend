@@ -32,7 +32,6 @@ import static com.portfolio.gymtracker.security.AccessChecking.checkIfUserAccess
 import jakarta.validation.Valid;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
 public class UserResource {
 
     Logger logger = LoggerFactory.getLogger(getClass());

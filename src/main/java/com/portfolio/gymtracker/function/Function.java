@@ -16,7 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 
-@Entity
+@Entity(name = "func")
 @JsonFilter("FunctionFilter")
 public class Function {
 

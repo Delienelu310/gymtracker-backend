@@ -10,6 +10,6 @@ import java.util.List;;
 public interface FunctionJpaRepository extends JpaRepository<Function, Integer>{
     // List<Function> findAllByAppUserId(int userId);
 
-     @Query("select f from Function f where f.published=true")
+    @Query("select f from func f where f.published=true")
     public List<Function> findAllByPublished();
 }

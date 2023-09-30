@@ -30,10 +30,8 @@ import static com.portfolio.gymtracker.security.AccessChecking.checkIfExerciseAc
 import static com.portfolio.gymtracker.security.AccessChecking.checkIfFunctionAccessable;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Digits;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
 public class ExerciseResource{
 
     private Logger logger = LoggerFactory.getLogger(getClass());

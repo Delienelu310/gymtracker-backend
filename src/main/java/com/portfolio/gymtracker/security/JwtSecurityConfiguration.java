@@ -19,8 +19,10 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -67,8 +69,9 @@ public class JwtSecurityConfiguration {
                     // .antMatchers(HttpMethod.OPTIONS,"/**").permitAll()
                     // .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
                     .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
-                    .requestMatchers(PathRequest.toH2Console()).permitAll()
-                    .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
+                    // .requestMatchers(PathRequest.toH2Console()).permitAll()
+                    // .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
                     .requestMatchers(new AntPathRequestMatcher("/authenticate")).permitAll()
                     .requestMatchers(new AntPathRequestMatcher("/register")).permitAll()
                     .requestMatchers(new AntPathRequestMatcher("/public/**")).permitAll()
@@ -98,12 +101,23 @@ public class JwtSecurityConfiguration {
         return http.build();
     }
 
-    @Bean
-    public DataSource dataSource(){
-        return new EmbeddedDatabaseBuilder()
-            .setType(EmbeddedDatabaseType.H2)
-            .addScript(JdbcDaoImpl.DEFAULT_USER_SCHEMA_DDL_LOCATION)
-            .build();
+    // @Bean
+    // public DataSource dataSource(){
+    //     return new EmbeddedDatabaseBuilder()
+    //         .setType(EmbeddedDatabaseType.H2)
+    //         .addScript(JdbcDaoImpl.DEFAULT_USER_SCHEMA_DDL_LOCATION)
+    //         .build();
+    // }
+
+    @Bean(name = "mysqlDataSource")
+    @Primary
+    public DataSource mysqlDataSource()
+    {
+        DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
+        dataSourceBuilder.url("jdbc:mysql://localhost:3306/gymtracker-database");
+        dataSourceBuilder.username("root");
+        dataSourceBuilder.password("ipaul_11");
+        return dataSourceBuilder.build();
     }
 
     @Bean
