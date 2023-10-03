@@ -18,6 +18,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -39,6 +41,8 @@ import org.springframework.web.cors.CorsUtils;
 
 @Configuration
 public class JwtSecurityConfiguration {
+
+    Logger logger = LoggerFactory.getLogger(getClass());
 
     // @Bean
     // public CorsConfigurationSource corsConfigurationSource() {
@@ -109,29 +113,31 @@ public class JwtSecurityConfiguration {
     //         .build();
     // }
 
-    @Bean(name = "mysqlDataSource")
-    @Primary
-    public DataSource mysqlDataSource()
-    {
-        DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
-        dataSourceBuilder.url("jdbc:mysql://localhost:3306/gymtracker-database");
-        dataSourceBuilder.username("root");
-        dataSourceBuilder.password("ipaul_11");
-        return dataSourceBuilder.build();
-    }
+    // @Bean(name = "mysqlDataSource")
+    // @Primary
+    // public DataSource mysqlDataSource()
+    // {
+    //     DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
+    //     dataSourceBuilder.url("jdbc:mysql://localhost:3306/gymtracker-database");
+    //     dataSourceBuilder.username("root");
+    //     dataSourceBuilder.password("ipaul_11");
+    //     return dataSourceBuilder.build();
+    // }
 
     @Bean
     public UserDetailsService userDetailsService(DataSource dataSource){
 
-        var admin = User.withUsername("delienelu")
-            .password("somepassword")
-            .passwordEncoder(str -> passwordEncoder().encode(str))
-            .roles("ADMIN", "MODER", "USER")
-            .build();
-
         var jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);
-        jdbcUserDetailsManager.createUser(admin);
+        if(!jdbcUserDetailsManager.userExists("delienelu")){
+            var admin = User.withUsername("delienelu")
+                .password("somepassword")
+                .passwordEncoder(str -> passwordEncoder().encode(str))
+                .roles("ADMIN", "MODER", "USER")
+                .build();
 
+
+            jdbcUserDetailsManager.createUser(admin);
+        }
         return jdbcUserDetailsManager;
     }
 
