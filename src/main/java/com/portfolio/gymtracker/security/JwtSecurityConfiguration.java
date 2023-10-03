@@ -113,20 +113,11 @@ public class JwtSecurityConfiguration {
     //         .build();
     // }
 
-    // @Bean(name = "mysqlDataSource")
-    // @Primary
-    // public DataSource mysqlDataSource()
-    // {
-    //     DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
-    //     dataSourceBuilder.url("jdbc:mysql://localhost:3306/gymtracker-database");
-    //     dataSourceBuilder.username("root");
-    //     dataSourceBuilder.password("ipaul_11");
-    //     return dataSourceBuilder.build();
-    // }
 
     @Bean
     public UserDetailsService userDetailsService(DataSource dataSource){
 
+        //actual admin credentials on deployed version of the app will differ from these one in future
         var jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);
         if(!jdbcUserDetailsManager.userExists("delienelu")){
             var admin = User.withUsername("delienelu")
