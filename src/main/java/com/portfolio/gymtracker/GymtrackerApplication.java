@@ -21,7 +21,8 @@ public class GymtrackerApplication {
 			public void addCorsMappings(CorsRegistry registry) {
 				registry.addMapping("/**")
 					.allowedMethods("*")
-					.allowedOrigins("http://gymtracker-frontend.s3-website.eu-central-1.amazonaws.com");
+					.allowedOrigins("http://gymtracker-frontend.s3-website.eu-central-1.amazonaws.com", "http://localhost:3000")
+					;
 			}
 		};
 	}
