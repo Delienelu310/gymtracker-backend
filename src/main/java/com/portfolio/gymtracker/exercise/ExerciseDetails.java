@@ -1,6 +1,8 @@
 package com.portfolio.gymtracker.exercise;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.Lob;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -13,9 +15,14 @@ public class ExerciseDetails {
     @Size(max=300)
     private String description;
 
-    public ExerciseDetails(String title, String description) {
+    //base64 image string
+    @Column(columnDefinition = "TEXT")
+    private String image;
+
+    public ExerciseDetails(String title, String description, String image) {
         this.title = title;
         this.description = description;
+        this.image = image;
     }
 
     public ExerciseDetails() {
@@ -35,6 +42,14 @@ public class ExerciseDetails {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+    
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 
     
