@@ -75,7 +75,7 @@ public class NormalMapper {
             .addFilter("UserFilter", SimpleBeanPropertyFilter.filterOutAllExcept("userId", "appUserDetails"))
             .addFilter("UserDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept("username"))
             .addFilter("FunctionFilter", SimpleBeanPropertyFilter.filterOutAllExcept("functionId", "functionDetails"))
-            .addFilter("FunctionDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept("title"));
+            .addFilter("FunctionDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept("title", "image"));
 
         mappingJacksonValue.setFilters(filterProvider);
 
@@ -137,7 +137,7 @@ public class NormalMapper {
             .addFilter("FunctionFilter", filter)
             .addFilter("UserFilter", SimpleBeanPropertyFilter.filterOutAllExcept("userId", "appUserDetails"))
             .addFilter("UserDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept("username"))
-            .addFilter("FunctionDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept("title"));
+            .addFilter("FunctionDetailsFilter", SimpleBeanPropertyFilter.serializeAll());
         mappingJacksonValue.setFilters(filterProvider);
 
         return mappingJacksonValue;

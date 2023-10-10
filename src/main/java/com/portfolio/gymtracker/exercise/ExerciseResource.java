@@ -62,6 +62,20 @@ public class ExerciseResource{
         ).toList());
     }
 
+    //getting public exercises list for function
+    @GetMapping("/public/functions/{function_id}/exercises")
+    public MappingJacksonValue getPublicExercisesListByFunction(@PathVariable("function_id") int functionId){
+        Optional<Function> function = functionJpaRepository.findById(functionId);
+        if(function.isEmpty()) throw new FunctionNotFoundException("The function with id " + functionId + " was not found");
+        if(!function.get().isPublished()) throw new RuntimeException("The function is not published");
+
+        return normalMapper.mapExerciseList(exerciseJpaRepository.findAllByPublished().stream().filter(
+            exercise -> 
+                exercise.isPublished() && 
+                exercise.getFunctionsIncluded().stream().anyMatch(func -> func.getFunctionId() == functionId)
+        ).toList());
+    }
+
     @GetMapping("/public/exercises/{exercise_id}")
     public MappingJacksonValue getPublicExercise(@PathVariable("exercise_id") int exercise_id){
         Optional<Exercise> exercise = exerciseJpaRepository.findById(exercise_id);
