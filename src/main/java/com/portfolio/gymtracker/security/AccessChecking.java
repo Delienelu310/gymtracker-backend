@@ -6,6 +6,7 @@ import org.springframework.security.core.Authentication;
 
 import com.portfolio.gymtracker.exercise.Exercise;
 import com.portfolio.gymtracker.function.Function;
+import com.portfolio.gymtracker.function.FunctionGroup;
 import com.portfolio.gymtracker.user.AppUser;
 
 public class AccessChecking {
@@ -30,12 +31,18 @@ public class AccessChecking {
     public static void checkIfExerciseAccessable(AppUser user, Exercise exercise){
         if(! user.getCreatedExercises().contains(exercise))
             if(!user.getFollowedExercises().contains(exercise))
-                throw new RuntimeException("You have not access to this page");
+                throw new RuntimeException("You have not access to this exercise");
     }
 
     public static void checkIfFunctionAccessable(AppUser user, Function function){
         if(! user.getCreatedFunctions().contains(function))
             if(!function.isPublished())
-                throw new RuntimeException("You have not access to this page");
+                throw new RuntimeException("You have not access to this function");
+    }
+
+    public static void checkIfFunctionGroupAccessable(AppUser user, FunctionGroup functionGroup){
+        if(! user.getCreatedFunctionGroups().contains(functionGroup))
+            if(! functionGroup.isPublished())
+                throw new RuntimeException("You have not access to this function group");
     }
 }

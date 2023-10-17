@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.portfolio.gymtracker.exercise.Exercise;
 import com.portfolio.gymtracker.exercise.training.Training;
 import com.portfolio.gymtracker.function.Function;
+import com.portfolio.gymtracker.function.FunctionGroup;
 import com.portfolio.gymtracker.user.AppUser;
 
 /**
@@ -105,6 +106,38 @@ public class NormalMapper {
         return mappingJacksonValue;
     }
     
+    public MappingJacksonValue mapFunctionGroupDetailed(FunctionGroup functionGroup){
+        MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(functionGroup);
+
+        FilterProvider filterProvider = new SimpleFilterProvider()
+            .addFilter("FunctionGroupFilter", SimpleBeanPropertyFilter.serializeAll())
+            .addFilter("FunctionGroupDeatilsFilter", SimpleBeanPropertyFilter.serializeAll())
+            .addFilter("FunctionGroupAuthor", SimpleBeanPropertyFilter.filterOutAllExcept("userId", "appUserDetails"))
+            .addFilter("UserDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept("username"))
+            .addFilter("GroupFunctionsFilter", SimpleBeanPropertyFilter.serializeAll())
+            .addFilter("FunctionDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept("title"))
+            .addFilter("UserFilter", SimpleBeanPropertyFilter.filterOutAllExcept("userId", "appUserDetails"));
+        mappingJacksonValue.setFilters(filterProvider);
+
+        return mappingJacksonValue;
+    }
+    
+    public MappingJacksonValue mapFunctionGroupList(List<FunctionGroup> functionGroupList){
+        MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(functionGroupList);
+
+        FilterProvider filterProvider = new SimpleFilterProvider()
+            .addFilter("FunctionGroupFilter", SimpleBeanPropertyFilter.filterOutAllExcept("functions"))
+            .addFilter("FunctionGroupDeatilsFilter", SimpleBeanPropertyFilter.serializeAll())
+            .addFilter("FunctionGroupAuthor", SimpleBeanPropertyFilter.filterOutAllExcept("userId", "appUserDetails"))
+            .addFilter("UserDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept("username"));
+        mappingJacksonValue.setFilters(filterProvider);
+
+        return mappingJacksonValue;
+    }
+
+    
+    
+    
     public MappingJacksonValue mapFunctionDetailed(Function function){
         MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(function);
 
@@ -123,6 +156,7 @@ public class NormalMapper {
 
         return mappingJacksonValue;
     }
+
     
     public MappingJacksonValue mapFunctionList(List<Function> functions){
         MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(functions);

@@ -3,8 +3,6 @@ package com.portfolio.gymtracker.function;
 import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -33,8 +31,6 @@ import com.portfolio.gymtracker.exercise.ExerciseJpaRepository;
 
 @RestController
 public class FunctionResource {
-
-    private Logger logger = LoggerFactory.getLogger(getClass());
     
     private FunctionJpaRepository functionJpaRepository;
     private UserJpaRepository userJpaRepository;
@@ -171,7 +167,10 @@ public class FunctionResource {
 
         checkIfUserAccessable(authentication, user.get());
 
-        functionJpaRepository.save(new Function(userJpaRepository.findById(userId).get(), false, functionDetails));
+        Function function = new Function();
+        function.setAuthor(userJpaRepository.findById(userId).get());
+        function.setFunctionDetails(functionDetails);
+        functionJpaRepository.save(function);
     }
 
     //changing function basic details

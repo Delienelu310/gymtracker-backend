@@ -9,7 +9,6 @@ import org.springframework.http.converter.json.MappingJacksonValue;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +24,8 @@ import com.portfolio.gymtracker.exercise.Exercise;
 import com.portfolio.gymtracker.exercise.ExerciseJpaRepository;
 import com.portfolio.gymtracker.exercise.ExerciseResource;
 import com.portfolio.gymtracker.function.Function;
+import com.portfolio.gymtracker.function.FunctionGroup;
+import com.portfolio.gymtracker.function.FunctionGroupJpaRepository;
 import com.portfolio.gymtracker.function.FunctionJpaRepository;
 import com.portfolio.gymtracker.function.FunctionResource;
 import static com.portfolio.gymtracker.security.AccessChecking.checkIfUserAccessable;
@@ -39,16 +40,20 @@ public class UserResource {
     private UserJpaRepository userJpaRepository;
     private ExerciseJpaRepository exerciseJpaRepository;
     private FunctionJpaRepository functionJpaRepository;
+    private FunctionGroupJpaRepository functionGroupJpaRepository;
+
     private NormalMapper normalMapper;
 
     public UserResource(UserJpaRepository userJpaRepository,
         ExerciseJpaRepository exerciseJpaRepository,
         FunctionJpaRepository functionJpaRepository,
+        FunctionGroupJpaRepository functionGroupJpaRepository,
         NormalMapper normalMapper
     ){
         this.userJpaRepository = userJpaRepository;
         this.exerciseJpaRepository = exerciseJpaRepository;
         this.functionJpaRepository = functionJpaRepository;
+        this.functionGroupJpaRepository = functionGroupJpaRepository;
         this.normalMapper = normalMapper;
     }
     
@@ -180,7 +185,9 @@ public class UserResource {
     //registering new user
     // @PostMapping("/users")
     public void registerAppUser(@RequestBody @Valid AppUserDetails userDetails){
-        userJpaRepository.save(new AppUser(userDetails));
+        AppUser user = new AppUser();
+        user.setAppUserDetails(userDetails);
+        userJpaRepository.save( user);
     }
 
     //changing basic user details
@@ -271,6 +278,49 @@ public class UserResource {
 
         //adding
         user.get().getFollowedFunctions().add(functionJpaRepository.findById(functionId).get());
+
+        userJpaRepository.save(user.get());
+    }
+
+    @PutMapping("users/{user_id}/following/functiongroups/add/{functiongroup_id}")
+    public void followFunctionGroup(
+        Authentication authentication, 
+        @PathVariable("user_id") int userId, 
+        @PathVariable("functiongroup_id") Long functionGroupId
+    ){
+        //checking if exercise is available and if user exists
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("There`s no user with id " + userId);
+
+        Optional<FunctionGroup> functionGroup = functionGroupJpaRepository.findById(functionGroupId);
+        if(functionGroup.isEmpty()) throw new ExerciseNotFoundException("There`s no functiong group with given id");
+
+        if(!functionGroup.get().isPublished()) throw new RuntimeException("The exercise is unpublished");
+
+        //checking if user has access:
+        checkIfUserAccessable(authentication, user.get());
+
+        //adding
+        user.get().getFollowedFunctionGroups().add(functionGroup.get());
+
+        userJpaRepository.save(user.get());
+    }
+
+    @PutMapping("users/{user_id}/following/functiongroups/remove/{functiongroup_id}")
+    public void unfollowFunctionGroup(
+        Authentication authentication, 
+        @PathVariable("user_id") int userId, 
+        @PathVariable("functiongroup_id") Long functionGroupId
+    ){
+
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        if(user.isEmpty()) throw new UserNotFoundException("There`s no user with given id ");
+
+        checkIfUserAccessable(authentication, user.get());
+
+        user.get().getFollowedFunctionGroups().removeIf( funcGroup -> {
+            return funcGroup.getFunctionGroupId() == functionGroupId;
+        });
 
         userJpaRepository.save(user.get());
     }
