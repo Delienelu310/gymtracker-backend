@@ -1,6 +1,8 @@
 package com.portfolio.gymtracker.function;
 
 import java.util.Optional;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -81,7 +83,7 @@ public class FunctionGroupController {
     }
 
 
-    @GetMapping("users/{user_id}/functiongroups/{functiongroup_id}")
+    @GetMapping("/users/{user_id}/functiongroups/{functiongroup_id}")
     public MappingJacksonValue getFunctionGroupById(
         Authentication authentication,
         @PathVariable("user_id") int userId, 
@@ -95,7 +97,7 @@ public class FunctionGroupController {
         return normalMapper.mapFunctionGroupDetailed(functionGroup.get());
     }
 
-    @GetMapping("users/{user_id}/functiongroups")
+    @GetMapping("/users/{user_id}/functiongroups/created")
     public MappingJacksonValue getFunctionGroups(Authentication authentication, @PathVariable("user_id") int userId){
     
         Optional<AppUser> user = userJpaRepository.findById(userId);
@@ -104,7 +106,30 @@ public class FunctionGroupController {
         return normalMapper.mapFunctionGroupList(user.get().getCreatedFunctionGroups());
     }
 
-    @DeleteMapping("users/{user_id}/functiongroups/functiongroup_id")
+    @GetMapping("/users/{user_id}/functiongroups/followed")
+    public MappingJacksonValue getFunctionGroupsFollowed(Authentication authentication, @PathVariable("user_id") int userId){
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        validatePathParameters(authentication, user, null, null);
+
+        return normalMapper.mapFunctionGroupList(user.get().getFollowedFunctionGroups());
+
+    }
+
+    @GetMapping("/users/{user_id}/functiongroups")
+    public MappingJacksonValue getFunctionGroupsAll(Authentication authentication, @PathVariable("user_id") int userId){
+        Optional<AppUser> user = userJpaRepository.findById(userId);
+        validatePathParameters(authentication, user, null, null);
+
+        List<FunctionGroup> result = new ArrayList<>();
+
+        result.addAll(user.get().getCreatedFunctionGroups());
+        result.addAll(user.get().getFollowedFunctionGroups());
+
+        return normalMapper.mapFunctionGroupList(result);
+
+    }
+
+    @DeleteMapping("/users/{user_id}/functiongroups/functiongroup_id")
     public void deleteFunctionGroupById(
         Authentication authentication, 
         @PathVariable("user_id") int userId, 

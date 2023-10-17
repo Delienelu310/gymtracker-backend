@@ -111,7 +111,7 @@ public class NormalMapper {
 
         FilterProvider filterProvider = new SimpleFilterProvider()
             .addFilter("FunctionGroupFilter", SimpleBeanPropertyFilter.serializeAll())
-            .addFilter("FunctionGroupDeatilsFilter", SimpleBeanPropertyFilter.serializeAll())
+            .addFilter("FunctionGroupDetailsFilter", SimpleBeanPropertyFilter.serializeAll())
             .addFilter("FunctionGroupAuthor", SimpleBeanPropertyFilter.filterOutAllExcept("userId", "appUserDetails"))
             .addFilter("UserDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept("username"))
             .addFilter("GroupFunctionsFilter", SimpleBeanPropertyFilter.serializeAll())
@@ -126,8 +126,8 @@ public class NormalMapper {
         MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(functionGroupList);
 
         FilterProvider filterProvider = new SimpleFilterProvider()
-            .addFilter("FunctionGroupFilter", SimpleBeanPropertyFilter.filterOutAllExcept("functions"))
-            .addFilter("FunctionGroupDeatilsFilter", SimpleBeanPropertyFilter.serializeAll())
+            .addFilter("FunctionGroupFilter", SimpleBeanPropertyFilter.serializeAllExcept("functions"))
+            .addFilter("FunctionGroupDetailsFilter", SimpleBeanPropertyFilter.serializeAll())
             .addFilter("FunctionGroupAuthor", SimpleBeanPropertyFilter.filterOutAllExcept("userId", "appUserDetails"))
             .addFilter("UserDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept("username"));
         mappingJacksonValue.setFilters(filterProvider);
