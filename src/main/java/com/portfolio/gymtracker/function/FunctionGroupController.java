@@ -79,7 +79,13 @@ public class FunctionGroupController {
         if(functionGroup.isEmpty()) throw new FunctionNotFoundException("The function group with given id  was not found");
         if(!functionGroup.get().isPublished()) throw new RuntimeException("The function group is not published");
 
+        //we will show only public functions publicly:
+
+        List<Function> shownFunctions = functionGroup.get().getFunctions().stream().filter(func -> func.isPublished()).toList();
+        functionGroup.get().setFunctions(shownFunctions);
+
         return normalMapper.mapFunctionGroupDetailed(functionGroup.get());
+    
     }
 
 
