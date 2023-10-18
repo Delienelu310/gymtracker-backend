@@ -48,7 +48,8 @@ public class Function {
     @JsonIgnore
     private List<Exercise> exercises = new ArrayList<>();
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JsonFilter("FunctionGroupFilter")
+    private List<FunctionGroup> functionGroups = new ArrayList<>();
 
-    
-    
 }

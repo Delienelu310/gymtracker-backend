@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.portfolio.gymtracker.user.AppUser;
 
 import jakarta.persistence.Embedded;
@@ -34,7 +35,7 @@ public class FunctionGroup {
     @JsonFilter("FunctionGroupDetailsFilter")
     private FunctionGroupDetails functionGroupDetails;
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "functionGroups")
     @JsonFilter("GroupFunctionsFilter")
     private List<Function> functions = new ArrayList<>();
 
@@ -43,6 +44,8 @@ public class FunctionGroup {
     @JsonFilter("FunctionGroupAuthor")
     private AppUser author; 
 
-    
+    @ManyToMany
+    @JsonIgnore
+    private List<AppUser> followers = new ArrayList<>();
 
 }

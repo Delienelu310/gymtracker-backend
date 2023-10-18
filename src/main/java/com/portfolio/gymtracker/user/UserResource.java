@@ -175,7 +175,8 @@ public class UserResource {
 
 
         for(Function  f: user.get().getCreatedFunctions()){
-            FunctionResource functionResource = new FunctionResource(functionJpaRepository, userJpaRepository, exerciseJpaRepository, normalMapper);
+            FunctionResource functionResource = new FunctionResource(functionJpaRepository,userJpaRepository,
+                exerciseJpaRepository, functionGroupJpaRepository, normalMapper);
             functionResource.deleteFunction(authentication, userId, f.getFunctionId());
         }
         //finally, deleting the user

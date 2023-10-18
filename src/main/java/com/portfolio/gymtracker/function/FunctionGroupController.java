@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 
 import com.portfolio.gymtracker.JacksonMappers.NormalMapper;
@@ -61,8 +61,8 @@ public class FunctionGroupController {
     
     @Autowired
     private FunctionGroupJpaRepository functionGroupJpaRepository;
-    @Autowired
-    private FunctionJpaRepository functionJpaRepository;
+    // @Autowired
+    // private FunctionJpaRepository functionJpaRepository;
     @Autowired
     private UserJpaRepository userJpaRepository;
     @Autowired
@@ -146,6 +146,16 @@ public class FunctionGroupController {
 
         validatePathParameters(authentication, user, null, functionGroup);
 
+        for(Function function : functionGroup.get().getFunctions()){
+            function.getFunctionGroups().remove(functionGroup.get());
+        }
+
+        for(AppUser follower : functionGroup.get().getFollowers()){
+            follower.getFollowedFunctionGroups().remove(functionGroup.get());
+        }
+
+        user.get().getCreatedFunctionGroups().remove(functionGroup.get());
+
         functionGroupJpaRepository.deleteById(functionGroupId);
     }
 
@@ -184,50 +194,51 @@ public class FunctionGroupController {
         functionGroupJpaRepository.save(functionGroup.get());
     }
 
-    @PutMapping("users/{user_id}/functiongroups/{functiongroup_id}/add/{function_id}")
-    public void addFunctionIntoGroup(
-        Authentication authentication,
-        @PathVariable("user_id") int userId, 
-        @PathVariable("functiongroup_id") Long functionGroupId, 
-        @PathVariable("function_id") int functionId
-    ){
-        Optional<FunctionGroup> functionGroup = functionGroupJpaRepository.findById(functionGroupId);
-        Optional<Function> function = functionJpaRepository.findById(functionId);
-        Optional<AppUser> user = userJpaRepository.findById(userId);
+    // @PutMapping("users/{user_id}/functiongroups/{functiongroup_id}/add/{function_id}")
+    // public void addFunctionIntoGroup(
+    //     Authentication authentication,
+    //     @PathVariable("user_id") int userId, 
+    //     @PathVariable("functiongroup_id") Long functionGroupId, 
+    //     @PathVariable("function_id") int functionId
+    // ){
+    //     Optional<FunctionGroup> functionGroup = functionGroupJpaRepository.findById(functionGroupId);
+    //     Optional<Function> function = functionJpaRepository.findById(functionId);
+    //     Optional<AppUser> user = userJpaRepository.findById(userId);
 
-        validatePathParameters(authentication, user, function, functionGroup);
+    //     validatePathParameters(authentication, user, function, functionGroup);
 
-        if(functionGroup.get().getFunctions().stream().anyMatch(func -> func.getFunctionId() == functionId)){
-            throw new RuntimeException("The function exists inside of the group already");
-        }
+    //     if(functionGroup.get().getFunctions().stream().anyMatch(func -> func.getFunctionId() == functionId)){
+    //         throw new RuntimeException("The function exists inside of the group already");
+    //     }
 
-        functionGroup.get().getFunctions().add(function.get());
-        functionGroupJpaRepository.save(functionGroup.get());
-    }
+    //     functionGroup.get().getFunctions().add(function.get());
+    //     functionGroupJpaRepository.save(functionGroup.get());
+    // }
 
-    @PutMapping("users/{user_id}/functiongroups/{functiongroup_id}/remove/{function_id}")
-    public void removeFunctionFromGroup(
-        Authentication authentication,
-        @PathVariable("user_id") int userId, 
-        @PathVariable("functiongroup_id") Long functionGroupId, 
-        @PathVariable("function_id") int functionId
-    ){
-        Optional<FunctionGroup> functionGroup = functionGroupJpaRepository.findById(functionGroupId);
-        Optional<Function> function = functionJpaRepository.findById(functionId);
-        Optional<AppUser> user = userJpaRepository.findById(userId);
+    // @PutMapping("users/{user_id}/functiongroups/{functiongroup_id}/remove/{function_id}")
+    // public void removeFunctionFromGroup(
+    //     Authentication authentication,
+    //     @PathVariable("user_id") int userId, 
+    //     @PathVariable("functiongroup_id") Long functionGroupId, 
+    //     @PathVariable("function_id") int functionId
+    // ){
+    //     Optional<FunctionGroup> functionGroup = functionGroupJpaRepository.findById(functionGroupId);
+    //     Optional<Function> function = functionJpaRepository.findById(functionId);
+    //     Optional<AppUser> user = userJpaRepository.findById(userId);
 
-        validatePathParameters(authentication, user, function, functionGroup);
+    //     validatePathParameters(authentication, user, function, functionGroup);
 
-        if(! functionGroup.get().getFunctions().stream().anyMatch(func -> func.getFunctionId() == functionId)){
-            throw new RuntimeException("The function does not exist inside of the group ");
-        }
+    //     if(! functionGroup.get().getFunctions().stream().anyMatch(func -> func.getFunctionId() == functionId)){
+    //         throw new RuntimeException("The function does not exist inside of the group ");
+    //     }
 
-        functionGroup.get().getFunctions().remove(function.get());
+    //     functionGroup.get().getFunctions().remove(function.get());
 
-        functionGroupJpaRepository.save(functionGroup.get());
-    }
+    //     functionGroupJpaRepository.save(functionGroup.get());
+    // }
 
     @PutMapping("/users/{user_id}/functiongroups/{functiongroup_id}/publish")
+    @PreAuthorize("hasRole('MODER')")
     public void publishFunctionGroup(
         Authentication authentication,
         @PathVariable("user_id") int userId,
@@ -247,6 +258,7 @@ public class FunctionGroupController {
     }
 
     @PutMapping("/users/{user_id}/functiongroups/{functiongroup_id}/unpublish")
+    @PreAuthorize("hasRole('MODER')")
     public void unpublishFunctionGroup(
         Authentication authentication,
         @PathVariable("user_id") int userId,

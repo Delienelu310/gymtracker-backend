@@ -14,6 +14,7 @@ public class FunctionDetails {
 
     @Size(min=3, max=30)
     @NotNull
+    @Column(unique = true)
     private String title;
     @Size(max = 300)
     private String description;
