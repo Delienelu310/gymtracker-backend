@@ -115,8 +115,8 @@ public class NormalMapper {
             .addFilter("FunctionGroupDetailsFilter", SimpleBeanPropertyFilter.serializeAll())
             .addFilter("FunctionGroupAuthor", SimpleBeanPropertyFilter.filterOutAllExcept("userId", "appUserDetails"))
             .addFilter("UserDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept("username"))
-            .addFilter("GroupFunctionsFilter", SimpleBeanPropertyFilter.serializeAll())
-            .addFilter("FunctionDetailsFilter", SimpleBeanPropertyFilter.filterOutAllExcept("title"))
+            .addFilter("GroupFunctionsFilter", SimpleBeanPropertyFilter.serializeAllExcept("functionGroups"))
+            .addFilter("FunctionDetailsFilter", SimpleBeanPropertyFilter.serializeAll())
             .addFilter("UserFilter", SimpleBeanPropertyFilter.filterOutAllExcept("userId", "appUserDetails"));
         mappingJacksonValue.setFilters(filterProvider);
 
